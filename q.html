@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Toán 8 HK1 - Math Quest</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{
+  --bg:#eef6ff;--panel:#fff;--panel2:#f4f8ff;--text:#172033;
+  --muted:#64748b;--primary:#2563eb;--primary2:#06b6d4;--accent:#f59e0b;
+  --good:#10b981;--bad:#ef4444;--border:#dbe5f1;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text);transition:.35s}
+body[data-theme="dark"]{--bg:#0b1120;--panel:#111827;--panel2:#1f2937;--text:#f1f5f9;--muted:#94a3b8;--primary:#60a5fa;--primary2:#22d3ee;--border:#334155}
+body[data-theme="cyber"]{--bg:#10051c;--panel:#190d29;--panel2:#241038;--text:#fdf4ff;--muted:#d8b4fe;--primary:#22d3ee;--primary2:#f0abfc;--accent:#facc15;--border:#5b2178}
+body[data-theme="emerald"]{--bg:#ecfdf5;--panel:#fff;--panel2:#dff7ec;--text:#064e3b;--muted:#52766a;--primary:#059669;--primary2:#10b981;--border:#b7e4d0}
+body[data-theme="cosmic"]{--bg:#09051c;--panel:#130d31;--panel2:#20154b;--text:#f5f3ff;--muted:#c4b5fd;--primary:#8b5cf6;--primary2:#c084fc;--accent:#fbbf24;--border:#49328a}
+body[data-theme="cyber"] .card,body[data-theme="cyber"] button{box-shadow:0 0 14px #ec489955}
+body[data-theme="cosmic"]{background:radial-gradient(circle at top,#21134d,var(--bg) 55%)}
+button{font:inherit}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;transition:.25s}
+.card:hover{transform:translateY(-2px)}
+.btn{border:0;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer;transition:.2s}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:white}
+.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--border)}
+.danger{background:#ef4444;color:white}
+.good{background:#10b981;color:white}
+.hidden{display:none!important}
+.progress{height:10px;background:var(--panel2);border-radius:20px;overflow:hidden}
+.progress>div{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));transition:.4s}
+.nav-active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:white!important}
+.math{font-family:"Cambria Math",Georgia,serif}
+.option{width:100%;text-align:left;margin:8px 0;background:var(--panel2);border:2px solid transparent;color:var(--text)}
+.option:hover{border-color:var(--primary)}
+.option.correct{border-color:var(--good);background:#10b98122}
+.option.wrong{border-color:var(--bad);background:#ef444422}
+.feedback{border-left:4px solid var(--primary);background:var(--panel2);padding:14px;border-radius:10px}
+.game-board{min-height:390px;position:relative;overflow:hidden;background:linear-gradient(135deg,#07152d,#132d4f);border-radius:18px}
+body[data-theme="emerald"] .game-board{background:linear-gradient(135deg,#064e3b,#0f766e)}
+body[data-theme="cyber"] .game-board{background:linear-gradient(135deg,#160622,#30104c)}
+body[data-theme="cosmic"] .game-board{background:radial-gradient(circle,#30206d,#08051a)}
+.dragon-question{position:absolute;left:50%;transform:translateX(-50%);top:20px;background:#fff;color:#111827;padding:18px 24px;border-radius:18px;font-size:25px;font-weight:800;box-shadow:0 10px 30px #0005;white-space:nowrap}
+.speed-track{appearance:none;width:100%;height:8px;border-radius:10px;background:var(--panel2)}
+.speed-track::-webkit-slider-thumb{appearance:none;width:22px;height:22px;border-radius:50%;background:var(--primary);cursor:pointer}
+.match-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.match-card{min-height:105px;padding:15px;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;background:var(--panel2);border:3px solid transparent;border-radius:15px;font-family:"Cambria Math",Georgia,serif;font-size:18px;font-weight:700;transition:.2s}
+.match-card:hover{transform:scale(1.03);border-color:var(--primary)}
+.match-card.selected{border-color:var(--accent);transform:scale(1.03)}
+.match-card.matched{border-color:var(--good);background:#10b98125;cursor:default}
+.ball{width:90px;height:90px;border-radius:50%;position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-weight:900;cursor:pointer;background:radial-gradient(circle at 30% 25%,#ffffff,#38bdf8 30%,#1d4ed8 85%);box-shadow:0 10px 25px #000a;user-select:none;transition:transform 0.1s linear, background 0.3s;padding:6px;text-align:center;}
+.ball:hover{transform:scale(1.1);filter:brightness(1.15);}
+.ball-label{font-size:16px;font-weight:900;line-height:1.1;}
+.ball-subtext{font-size:11px;font-weight:600;opacity:0.95;white-space:normal;max-width:80px;text-align:center;word-break:break-word;margin-top:2px;}
+@keyframes float{to{transform:translateY(-8px)}}
+@keyframes pop{50%{transform:scale(1.4);opacity:.4}100%{transform:scale(0);opacity:0}}
+.pop{animation:pop .3s}
+.shop-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px;background:var(--panel2);border-radius:14px;margin-bottom:10px}
+.theme-dot{width:42px;height:42px;border-radius:12px;cursor:pointer;border:3px solid transparent}
+.theme-dot.active{border-color:var(--text)}
+.toast{position:fixed;right:20px;bottom:20px;z-index:100;background:var(--panel);border:1px solid var(--border);padding:14px 18px;border-radius:14px;box-shadow:0 10px 35px #0004;animation:toast .3s}
+@keyframes toast{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.theory-card{background:var(--panel2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+@media(max-width:800px){
+ .match-grid{grid-template-columns:repeat(2,1fr)}
+ .desktop-only{display:none}
+ .dragon-question{font-size:18px;max-width:90%;white-space:normal;text-align:center}
+}
+</style>
+</head>
+
+<body data-theme="ocean">
+<div id="toastBox"></div>
+
+<header class="sticky top-0 z-50 backdrop-blur-xl bg-[var(--panel)]/90 border-b border-[var(--border)]">
+<div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+  <div class="text-3xl">🧠</div>
+  <div class="flex-1">
+    <h1 class="font-black text-lg md:text-xl">TOÁN 8 HK1 <span class="text-[var(--primary)]">MATH QUEST</span></h1>
+    <div class="text-xs text-[var(--muted)]">Học • Chơi • Chinh phục</div>
+  </div>
+  <div class="hidden md:flex items-center gap-4">
+    <span>⭐ <b id="levelTop">1</b></span>
+    <span>⚡ <b id="xpTop">0</b></span>
+    <span>🪙 <b id="coinTop">0</b></span>
+    <span>🔥 <b id="streakTop">0</b></span>
+  </div>
+  <button class="btn secondary" onclick="toggleSound()">🔊 <span id="soundText">ON</span></button>
+</div>
+</header>
+
+<div class="max-w-7xl mx-auto px-4 py-5">
+<div class="grid lg:grid-cols-[250px_1fr] gap-5">
+
+<aside class="card p-4 h-fit lg:sticky lg:top-24">
+  <div class="flex items-center gap-3 mb-4">
+    <div id="avatar" class="w-14 h-14 rounded-full bg-[var(--primary)] flex items-center justify-center text-3xl">🧑‍🎓</div>
+    <div>
+      <div class="font-black">Học sinh</div>
+      <div class="text-sm text-[var(--muted)]">Cấp độ <span id="levelSide">1</span></div>
+    </div>
+  </div>
+  <div class="text-xs flex justify-between mb-1"><span>XP</span><span id="xpLabel">0/100</span></div>
+  <div class="progress mb-4"><div id="xpBar" style="width:0%"></div></div>
+
+  <nav class="space-y-2">
+    <button class="btn secondary w-full text-left nav-active" onclick="showMode('theory',this)">📖 Lý Thuyết Bài Học</button>
+    <button class="btn secondary w-full text-left" onclick="showMode('quiz',this)">🏆 Chinh Phục Đỉnh Cao</button>
+    <button class="btn secondary w-full text-left" onclick="showMode('dragon',this)">🐉 Rồng Luyện Toán</button>
+    <button class="btn secondary w-full text-left" onclick="showMode('match',this)">🧩 Ghép đôi HĐT</button>
+    <button class="btn secondary w-full text-left" onclick="showMode('ball',this)">🎯 Bắn Bóng Toán</button>
+    <button class="btn secondary w-full text-left" onclick="showMode('aiChat',this)">🤖 Trợ Lý Toán AI</button>
+    <button class="btn secondary w-full text-left" onclick="showMode('shop',this)">🛍️ Cửa hàng</button>
+  </nav>
+
+  <div class="mt-5 pt-4 border-t border-[var(--border)]">
+    <div class="font-bold mb-3">🎨 Giao diện</div>
+    <div class="grid grid-cols-5 gap-2">
+      <button title="Ocean Blue" class="theme-dot bg-blue-500" onclick="setTheme('ocean')"></button>
+      <button title="Dark" class="theme-dot bg-slate-900" onclick="setTheme('dark')"></button>
+      <button title="Cyberpunk" class="theme-dot bg-fuchsia-700" onclick="setTheme('cyber')"></button>
+      <button title="Emerald" class="theme-dot bg-emerald-600" onclick="setTheme('emerald')"></button>
+      <button title="Cosmic" class="theme-dot bg-violet-800" onclick="setTheme('cosmic')"></button>
+    </div>
+  </div>
+</aside>
+
+<main>
+
+<!-- THEORY (LÝ THUYẾT BÀI HỌC) -->
+<section id="theoryMode" class="mode">
+<div class="card p-5 md:p-7">
+ <div class="flex flex-wrap gap-2 justify-between items-center mb-5">
+   <div>
+    <div class="text-sm text-[var(--primary)] font-bold">LÝ THUYẾT TRỌNG TÂM</div>
+    <h2 class="text-2xl font-black">📖 Bài Học Toán 8 HK1</h2>
+   </div>
+   <select id="theoryTopicSelect" class="secondary rounded-xl p-2" onchange="renderTheory()">
+     <option value="all">📚 Tất cả chương</option>
+     <option value="poly">🔢 Chương 1: Đa thức & HĐT</option>
+     <option value="fraction">➗ Chương 2: Phân thức đại số</option>
+     <option value="geo">📐 Chương 3: Tứ giác & Hình học</option>
+     <option value="data">📊 Chương 4: Thu thập & Biểu diễn dữ liệu</option>
+   </select>
+ </div>
+ <div id="theoryContent"></div>
+</div>
+</section>
+
+<!-- QUIZ -->
+<section id="quizMode" class="mode hidden">
+<div class="card p-5 md:p-7">
+ <div class="flex flex-wrap gap-2 justify-between items-center mb-5">
+   <div>
+    <div class="text-sm text-[var(--primary)] font-bold">CHẾ ĐỘ 1</div>
+    <h2 class="text-2xl font-black">🏆 Chinh Phục Đỉnh Cao</h2>
+   </div>
+   <select id="topicSelect" class="secondary rounded-xl p-2" onchange="newQuestion()">
+     <option value="all">📚 Tất cả chủ đề</option>
+     <option value="poly">🔢 Đa thức & HĐT</option>
+     <option value="fraction">➗ Phân thức</option>
+     <option value="geo">📐 Hình học</option>
+     <option value="data">📊 Dữ liệu</option>
+   </select>
+ </div>
+ <div class="flex gap-2 text-sm mb-4">
+   <span class="px-3 py-1 rounded-full bg-[var(--panel2)]">🔥 Combo <b id="quizStreak">0</b></span>
+   <span class="px-3 py-1 rounded-full bg-[var(--panel2)]">🎯 Câu <b id="qNumber">1</b></span>
+ </div>
+ <div id="question" class="text-xl md:text-2xl font-black math mb-5"></div>
+ <div id="options"></div>
+ <div id="feedback" class="feedback hidden mt-4"></div>
+ <div class="mt-5 flex gap-2">
+   <button id="nextBtn" class="btn primary hidden" onclick="newQuestion()">➡️ Câu tiếp theo</button>
+   <button class="btn secondary" onclick="useFifty()">50/50</button>
+   <button class="btn secondary" onclick="skipQuestion()">⏭️ Bỏ qua</button>
+ </div>
+</div>
+</section>
+
+<!-- DRAGON -->
+<section id="dragonMode" class="mode hidden">
+<div class="card p-5 md:p-7">
+ <div class="flex flex-wrap justify-between gap-3 items-center mb-4">
+  <div>
+   <div class="text-sm text-[var(--primary)] font-bold">CHẾ ĐỘ 2</div>
+   <h2 class="text-2xl font-black">🐉 Rồng Luyện Toán</h2>
+  </div>
+  <div class="flex gap-2">
+   <span class="px-3 py-2 rounded-xl bg-[var(--panel2)]">⏱️ <b id="dragonTime">30</b>s</span>
+   <span class="px-3 py-2 rounded-xl bg-[var(--panel2)]">🏆 <b id="dragonScore">0</b></span>
+  </div>
+ </div>
+
+ <div class="card p-4 mb-4">
+  <div class="flex justify-between text-sm mb-2">
+   <b>🐢 Tốc độ</b><b id="speedLabel">1.0×</b>
+  </div>
+  <input id="speedRange" class="speed-track" type="range" min="0.5" max="2" step="0.25" value="1" oninput="updateSpeed(this.value)">
+  <div class="flex justify-between text-xs text-[var(--muted)] mt-2"><span>0.5× Dễ</span><span>1×</span><span>1.5×</span><span>2× Siêu nhanh</span></div>
+ </div>
+
+ <div id="dragonBoard" class="game-board">
+   <div id="dragonStart" class="absolute inset-0 flex flex-col items-center justify-center text-white z-10">
+     <div class="text-6xl mb-3">🐉</div>
+     <h3 class="text-2xl font-black mb-2">Rồng đang chờ bạn!</h3>
+     <p class="opacity-80 mb-4">Giải càng nhanh, thưởng càng lớn.</p>
+     <button class="btn primary" onclick="startDragon()">🚀 Bắt đầu</button>
+   </div>
+   <div id="dragonQ" class="dragon-question hidden"></div>
+   <div id="dragonAnswers" class="absolute bottom-5 left-3 right-3 grid grid-cols-2 gap-2"></div>
+ </div>
+</div>
+</section>
+
+<!-- MATCH -->
+<section id="matchMode" class="mode hidden">
+<div class="card p-5 md:p-7">
+ <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+  <div>
+   <div class="text-sm text-[var(--primary)] font-bold">CHẾ ĐỘ 3</div>
+   <h2 class="text-2xl font-black">🧩 Ghép đôi Hằng đẳng thức</h2>
+   <p class="text-sm text-[var(--muted)]">Các thẻ đã <b>ngửa sẵn</b>. Chọn 2 thẻ tương ứng.</p>
+  </div>
+  <div class="flex gap-2">
+   <span class="px-3 py-2 rounded-xl bg-[var(--panel2)]">🎯 <b id="matchCount">0</b>/7</span>
+   <button class="btn primary" onclick="initMatch()">🔄 Ván mới</button>
+  </div>
+ </div>
+ <div id="matchGrid" class="match-grid"></div>
+</div>
+</section>
+
+<!-- BALL -->
+<section id="ballMode" class="mode hidden">
+<div class="card p-5 md:p-7">
+ <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+  <div>
+   <div class="text-sm text-[var(--primary)] font-bold">CHẾ ĐỘ 4</div>
+   <h2 class="text-2xl font-black">🎯 Bắn Bóng Toán Học</h2>
+   <p class="text-sm text-[var(--muted)]">Bóng bay/di chuyển linh hoạt! Chọn và bắn vào quả bóng chứa đáp án đúng hoặc nhờ AI gợi ý.</p>
+  </div>
+  <div class="flex flex-wrap gap-2 items-center">
+   <button class="btn secondary" onclick="askAIHint()">🤖 AI Gợi Ý</button>
+   <span class="px-3 py-2 rounded-xl bg-[var(--panel2)]">⏱️ <b id="ballTime">30</b>s</span>
+   <span class="px-3 py-2 rounded-xl bg-[var(--panel2)]">🏆 <b id="ballScore">0</b></span>
+  </div>
+ </div>
+ <div class="text-center mb-4">
+   <div id="ballQuestion" class="text-xl md:text-2xl font-black math mb-2">Nhấn bắt đầu để chơi!</div>
+   <div id="aiHintBox" class="hidden mb-3 p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-sm font-medium text-indigo-600 dark:text-indigo-300"></div>
+   <button id="ballStart" class="btn primary" onclick="startBall()">🎯 Bắt đầu</button>
+ </div>
+ <div id="ballBoard" class="game-board hidden"></div>
+</div>
+</section>
+
+<!-- AI CHAT -->
+<section id="aiChatMode" class="mode hidden">
+<div class="card p-5 md:p-7">
+ <div class="flex justify-between items-center mb-4">
+  <div>
+   <div class="text-sm text-[var(--primary)] font-bold">TRỢ LÝ THÔNG MINH</div>
+   <h2 class="text-2xl font-black">🤖 Gia Sư Toán AI (Math AI Assistant)</h2>
+   <p class="text-sm text-[var(--muted)]">Giải đáp kiến thức, gợi ý phương pháp giải & luyện tập tự động.</p>
+  </div>
+ </div>
+ <div class="card p-4 bg-[var(--panel2)] mb-4 h-80 overflow-y-auto flex flex-col gap-3" id="aiChatBox">
+   <div class="bg-[var(--panel)] p-3 rounded-2xl border border-[var(--border)] max-w-[85%] self-start">
+     👋 **Chào bạn!** Mình là **Trợ lý Toán AI**. Bạn có thắc mắc về Hằng đẳng thức, Phân thức, Hình học hay cần giải bài tập nào? Hãy hỏi mình nhé!
+   </div>
+ </div>
+ <div class="flex gap-2">
+   <input type="text" id="aiInput" class="flex-1 p-3 rounded-xl bg-[var(--panel2)] border border-[var(--border)] focus:outline-none focus:border-[var(--primary)]" placeholder="Hỏi AI (VD: Phân tích x^2 - 16, Hằng đẳng thức số 1 là gì?...)" onkeypress="if(event.key==='Enter')sendAIMessage()">
+   <button class="btn primary" onclick="sendAIMessage()">Gửi 🚀</button>
+ </div>
+</div>
+</section>
+
+<!-- SHOP -->
+<section id="shopMode" class="mode hidden">
+<div class="card p-5 md:p-7">
+ <div class="flex justify-between items-center mb-5">
+  <div><div class="text-sm text-[var(--primary)] font-bold">PHẦN THƯỞNG</div><h2 class="text-2xl font-black">🛍️ Cửa hàng</h2></div>
+  <div class="text-xl font-black">🪙 <span id="shopCoins">0</span></div>
+ </div>
+ <div id="shopList"></div>
+</div>
+</section>
+
+</main>
+</div>
+</div>
+
+<script>
+/* =========================
+   DATA & STATE
+========================= */
+const defaultState={
+ level:1,xp:0,coins:0,streak:0,highBall:0,highDragon:0,
+ theme:"ocean",sound:true,
+ unlocked:["avatar_student"],avatar:"🧑‍🎓",
+ items:{avatar_dragon:false,avatar_robot:false,theme_cyber:false,theme_cosmic:false,power_double:false,power_fifty:false,power_skip:false}
+};
+let state=JSON.parse(localStorage.getItem("math8_state")||"null")||structuredClone(defaultState);
+state={...defaultState,...state,items:{...defaultState.items,...(state.items||{})}};
+
+/* =========================
+   LESSONS / THEORY DATA
+========================= */
+const theoryData = [
+ {
+  topic: "poly",
+  title: "Bài 1: Don thức và Đa thức",
+  summary: "Khái niệm đơn thức, đa thức thu gọn, bậc của đa thức và các phép toán cộng, trừ, nhân đa thức.",
+  details: [
+   "<b>Đơn thức</b>: Là biểu thức đại số chỉ gồm một số, một biến hoặc một tích giữa các số và các biến (VD: 3x²y, -5x).",
+   "<b>Đa thức</b>: Là một tổng của những đơn thức. Mỗi đơn thức trong tổng gọi là một hạng tử của đa thức.",
+   "<b>Thu gọn đa thức</b>: Cộng, trừ các hạng tử đồng dạng để đa thức không còn 2 hạng tử nào đồng dạng.",
+   "<b>Phép nhân đa thức</b>: (A + B)(C + D) = AC + AD + BC + BD."
+  ]
+ },
+ {
+  topic: "poly",
+  title: "Bài 2: 7 Hằng Đẳng Thức Đáng Nhớ",
+  summary: "Hệ thống 7 hằng đẳng thức cốt lõi của Chương trình Toán 8.",
+  details: [
+   "1. <b>Bình phương của một tổng</b>: (a + b)² = a² + 2ab + b²",
+   "2. <b>Bình phương của một hiệu</b>: (a - b)² = a² - 2ab + b²",
+   "3. <b>Hiệu hai bình phương</b>: a² - b² = (a - b)(a + b)",
+   "4. <b>Lập phương của một tổng</b>: (a + b)³ = a³ + 3a²b + 3ab² + b³",
+   "5. <b>Lập phương của một hiệu</b>: (a - b)³ = a³ - 3a²b + 3ab² - b³",
+   "6. <b>Tổng hai lập phương</b>: a³ + b³ = (a + b)(a² - ab + b²)",
+   "7. <b>Hiệu hai lập phương</b>: a³ - b³ = (a - b)(a² + ab + b²)"
+  ]
+ },
+ {
+  topic: "poly",
+  title: "Bài 3: Phân Tích Đa Thức Thành Nhân Tử",
+  summary: "Các phương pháp cơ bản biến đổi đa thức thành tích của các đa thức.",
+  details: [
+   "<b>Phương pháp 1: Đặt nhân tử chung</b> (VD: 2x² + 4x = 2x(x + 2)).",
+   "<b>Phương pháp 2: Dùng hằng đẳng thức</b> (VD: x² - 9 = (x - 3)(x + 3)).",
+   "<b>Phương pháp 3: Nhóm hạng tử</b> (VD: x² - xy + x - y = x(x - y) + (x - y) = (x - y)(x + 1)).",
+   "<b>Phương pháp 4: Phối hợp nhiều phương pháp hoặc tách/thêm bớt hạng tử</b>."
+  ]
+ },
+ {
+  topic: "fraction",
+  title: "Bài 4: Phân Thức Đại Số & Tính Chất Cơ Bản",
+  summary: "Khái niệm phân thức đại số A/B (B ≠ 0), điều kiện xác định và rút gọn phân thức.",
+  details: [
+   "<b>Định nghĩa</b>: Phân thức đại số là biểu thức có dạng A/B, trong đó A, B là các đa thức và B khác đa thức 0.",
+   "<b>Điều kiện xác định</b>: Mẫu thức B phải khác 0.",
+   "<b>Tính chất cơ bản</b>: A/B = (A · M) / (B · M) (với M ≠ 0) và A/B = (A : N) / (B : N) (với N là nhân tử chung).",
+   "<b>Rút gọn phân thức</b>: Phân tích cả tử và mẫu thành nhân tử rồi chia cả tử và mẫu cho nhân tử chung."
+  ]
+ },
+ {
+  topic: "fraction",
+  title: "Bài 5: Các Phép Toán Trên Phân Thức Đại Số",
+  summary: "Quy tắc cộng, trừ, nhân, chia phân thức đại số.",
+  details: [
+   "<b>Cộng/Trừ cùng mẫu</b>: A/M ± B/M = (A ± B)/M.",
+   "<b>Cộng/Trừ khác mẫu</b>: Quy đồng mẫu thức các phân thức rồi cộng/trừ các tử thức giữ nguyên mẫu chung.",
+   "<b>Phép nhân</b>: (A/B) · (C/D) = (A · C) / (B · D).",
+   "<b>Phép chia</b>: (A/B) : (C/D) = (A/B) · (D/C) (với C/D ≠ 0)."
+  ]
+ },
+ {
+  topic: "geo",
+  title: "Bài 6: Tứ Giác & Hình Bình Hành",
+  summary: "Tổng các góc trong tứ giác và các dấu hiệu nhận biết Hình bình hành.",
+  details: [
+   "<b>Định lý tứ giác</b>: Tổng 4 góc trong một tứ giác bằng 360°.",
+   "<b>Hình bình hành</b>: Tứ giác có các cạnh đối song song.",
+   "<b>Dấu hiệu nhận biết HBH</b>:<br>" +
+   "• Tứ giác có các cạnh đối song song hoặc các cạnh đối bằng nhau.<br>" +
+   "• Tứ giác có một cặp cạnh đối vừa song song vừa bằng nhau.<br>" +
+   "• Tứ giác có hai đường chéo cắt nhau tại trung điểm mỗi đường."
+  ]
+ },
+ {
+  topic: "geo",
+  title: "Bài 7: Hình Chữ Nhật, Hình Thoi & Hình Vuông",
+  summary: "Đặc điểm và dấu hiệu nhận biết các hình tứ giác đặc biệt.",
+  details: [
+   "<b>Hình chữ nhật</b>: Là HBH có 1 góc vuông (hoặc 2 đường chéo bằng nhau).",
+   "<b>Hình thoi</b>: Là HBH có 2 cạnh kề bằng nhau (hoặc 2 đường chéo vuông góc với nhau, hoặc 1 đường chéo là đường phân giác của một góc).",
+   "<b>Hình vuông</b>: Tứ giác vừa là Hình chữ nhật vừa là Hình thoi (có 4 góc vuông và 4 cạnh bằng nhau)."
+  ]
+ },
+ {
+  topic: "data",
+  title: "Bài 8: Thu Thập & Biểu Diễn Dữ Liệu",
+  summary: "Các dạng biểu đồ thống kê và bảng tần số.",
+  details: [
+   "<b>Bảng dữ liệu / Bảng tần số</b>: Thống kê số lần xuất hiện (tần số) của mỗi giá trị dữ liệu.",
+   "<b>Biểu đồ cột / Cột kép</b>: Thích hợp để so sánh số lượng giữa các đối tượng.",
+   "<b>Biểu đồ quạt tròn</b>: Thích hợp biểu diễn tỉ lệ phần trăm các phần so với tổng thể.",
+   "<b>Biểu đồ đoạn thẳng</b>: Thích hợp biểu diễn sự thay đổi của dữ liệu theo thời gian."
+  ]
+ }
+];
+
+function renderTheory(){
+ const topic = document.getElementById("theoryTopicSelect").value;
+ const list = topic === "all" ? theoryData : theoryData.filter(x => x.topic === topic);
+ const container = document.getElementById("theoryContent");
+ container.innerHTML = "";
+ 
+ list.forEach(item => {
+  const card = document.createElement("div");
+  card.className = "theory-card";
+  
+  let detailsHtml = item.details.map(d => `<li class="mb-1 text-sm md:text-base">${d}</li>`).join("");
+  
+  card.innerHTML = `
+   <h3 class="text-xl font-bold text-[var(--primary)] mb-2">${item.title}</h3>
+   <p class="text-sm font-medium mb-3 text-[var(--muted)]">${item.summary}</p>
+   <ul class="list-disc list-inside space-y-1 border-t border-[var(--border)] pt-3">
+    ${detailsHtml}
+   </ul>
+  `;
+  container.appendChild(card);
+ });
+}
+
+const quizBank=[
+ {topic:"poly",q:"Phân tích đa thức: x² − 9 thành nhân tử.",a:["(x − 3)(x + 3)","(x − 9)(x + 1)","(x − 3)²","x(x − 9)"],correct:0,ex:"Dùng hiệu hai bình phương: x² − 3² = (x − 3)(x + 3)."},
+ {topic:"poly",q:"Kết quả của (x + 2)² là:",a:["x² + 2x + 4","x² + 4x + 4","x² + 4","x² + 4x + 2"],correct:1,ex:"Theo HĐT (a+b)² = a²+2ab+b². Với a=x, b=2 ta được x²+4x+4."},
+ {topic:"poly",q:"Phân tích x² + 6x + 9 thành nhân tử.",a:["(x+3)²","(x−3)²","(x+9)(x+1)","x(x+6)+9"],correct:0,ex:"x²+6x+9 = x²+2·x·3+3² = (x+3)²."},
+ {topic:"poly",q:"Phân tích x³ − 8 thành nhân tử.",a:["(x−2)(x²+2x+4)","(x−2)(x²−2x+4)","(x+2)(x²+4)","(x−8)(x²+1)"],correct:0,ex:"Dùng a³−b³=(a−b)(a²+ab+b²), với a=x,b=2."},
+ {topic:"fraction",q:"Rút gọn (x²−9)/(x−3), với x≠3.",a:["x−3","x+3","x²+3","3x"],correct:1,ex:"x²−9=(x−3)(x+3). Khử x−3, kết quả x+3."},
+ {topic:"fraction",q:"1/x + 1/2x bằng:",a:["3/2x","(x+2)/2x","(x+1)/2x","1/3x"],correct:1,ex:"Quy đồng mẫu 2x: 1/x=2/2x và 1/2x=1/2x. Tổng=(x+2)/2x."},
+ {topic:"fraction",q:"(x/3) : (2x/9), x≠0, bằng:",a:["2/3","3/2","x/6","6x"],correct:1,ex:"x/3 × 9/(2x)=9/6=3/2."},
+ {topic:"geo",q:"Dấu hiệu nào đủ để một tứ giác là hình bình hành?",a:["Hai đường chéo bằng nhau","Hai đường chéo vuông góc","Hai đường chéo cắt nhau tại trung điểm mỗi đường","Có một góc 90°"],correct:2,ex:"Nếu hai đường chéo của tứ giác cắt nhau tại trung điểm mỗi đường thì tứ giác là hình bình hành."},
+ {topic:"geo",q:"Hình chữ nhật có đặc điểm nào?",a:["Bốn cạnh bằng nhau","Hai đường chéo vuông góc","Bốn góc vuông","Chỉ có một cặp cạnh song song"],correct:2,ex:"Hình chữ nhật là hình bình hành có một góc vuông, do đó có bốn góc vuông."},
+ {topic:"geo",q:"Hình thoi có tính chất nào?",a:["Hai đường chéo vuông góc","Bốn góc vuông","Hai đường chéo luôn bằng nhau","Chỉ có hai cạnh bằng nhau"],correct:0,ex:"Hai đường chéo của hình thoi vuông góc với nhau và cắt nhau tại trung điểm."},
+ {topic:"data",q:"Một lớp có điểm: 5, 7, 7, 8, 8, 8, 9. Tần số của điểm 8 là:",a:["2","3","4","8"],correct:1,ex:"Số 8 xuất hiện 3 lần nên tần số của 8 là 3."},
+ {topic:"data",q:"Dạng biểu đồ phù hợp để thể hiện cơ cấu tỉ lệ các nhóm là:",a:["Biểu đồ quạt tròn","Biểu đồ đoạn thẳng","Bảng nhân","Sơ đồ cây"],correct:0,ex:"Biểu đồ quạt tròn thường dùng để biểu diễn cơ cấu, tỉ lệ các thành phần của một tổng thể."}
+];
+
+const matchPairs=[
+ ["(a+b)²","a² + 2ab + b²"],
+ ["(a−b)²","a² − 2ab + b²"],
+ ["a²−b²","(a−b)(a+b)"],
+ ["(a+b)³","a³ + 3a²b + 3ab² + b³"],
+ ["(a−b)³","a³ − 3a²b + 3ab² − b³"],
+ ["a³+b³","(a+b)(a²−ab+b²)"],
+ ["a³−b³","(a−b)(a²+ab+b²)"]
+];
+
+function save(){localStorage.setItem("math8_state",JSON.stringify(state));updateUI()}
+function toast(msg){
+ const d=document.createElement("div");d.className="toast";d.textContent=msg;
+ document.getElementById("toastBox").appendChild(d);setTimeout(()=>d.remove(),2200)
+}
+function sound(type="click"){
+ if(!state.sound)return;
+ try{
+  const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();
+  o.frequency.value=type==="good"?700:type==="bad"?180:400;
+  o.type="sine";g.gain.value=.06;o.connect(g);g.connect(c.destination);
+  o.start();o.stop(c.currentTime+.12)
+ }catch(e){}
+}
+function toggleSound(){state.sound=!state.sound;save();document.getElementById("soundText").textContent=state.sound?"ON":"OFF";sound()}
+function addReward(xp,coins,mult=1){
+ xp=Math.round(xp*mult);coins=Math.round(coins*mult);
+ state.xp+=xp;state.coins+=coins;
+ while(state.xp>=100){state.xp-=100;state.level++;toast("🎉 Lên cấp "+state.level+"!")}
+ state.coins=Math.max(0,state.coins);
+ save();toast(`✨ +${xp} XP  🪙 +${coins} Coin`);
+}
+function updateUI(){
+ document.getElementById("levelTop").textContent=state.level;
+ document.getElementById("levelSide").textContent=state.level;
+ document.getElementById("xpTop").textContent=state.xp;
+ document.getElementById("coinTop").textContent=state.coins;
+ document.getElementById("streakTop").textContent=state.streak;
+ document.getElementById("xpLabel").textContent=`${state.xp}/100`;
+ document.getElementById("xpBar").style.width=state.xp+"%";
+ document.getElementById("shopCoins").textContent=state.coins;
+ document.getElementById("avatar").textContent=state.avatar;
+ document.querySelectorAll(".theme-dot").forEach(x=>x.classList.remove("active"));
+ const map={ocean:0,dark:1,cyber:2,emerald:3,cosmic:4};
+ document.querySelectorAll(".theme-dot")[map[state.theme]].classList.add("active");
+}
+function setTheme(t){
+ if((t==="cyber"||t==="cosmic") && !state.items["theme_"+t]){toast("🔒 Hãy mở khóa theme này trong Cửa hàng!");return}
+ state.theme=t;document.body.dataset.theme=t;save();sound();toast("🎨 Đã đổi giao diện")
+}
+
+/* =========================
+   NAVIGATION
+========================= */
+function showMode(mode,btn){
+ document.querySelectorAll(".mode").forEach(x=>x.classList.add("hidden"));
+ document.getElementById(mode+"Mode").classList.remove("hidden");
+ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("nav-active"));
+ if(btn)btn.classList.add("nav-active");
+ if(mode==="theory")renderTheory();
+ if(mode==="match")initMatch();
+ if(mode==="shop")renderShop();
+}
+
+/* =========================
+   QUIZ
+========================= */
+let currentQ=null,qIndex=0,answered=false,hiddenOptions=[];
+function getQuestions(){
+ const topic=document.getElementById("topicSelect").value;
+ return topic==="all"?quizBank:quizBank.filter(x=>x.topic===topic);
+}
+function newQuestion(){
+ answered=false;hiddenOptions=[];
+ const list=getQuestions();currentQ=list[Math.floor(Math.random()*list.length)];
+ qIndex++;
+ document.getElementById("qNumber").textContent=qIndex;
+ document.getElementById("feedback").classList.add("hidden");
+ document.getElementById("nextBtn").classList.add("hidden");
+ document.getElementById("question").innerHTML=currentQ.q;
+ const box=document.getElementById("options");box.innerHTML="";
+ currentQ.a.forEach((x,i)=>{
+  const b=document.createElement("button");b.className="btn option";
+  b.innerHTML=`<b>${String.fromCharCode(65+i)}.</b> ${x}`;
+  b.onclick=()=>answerQuiz(i,b);box.appendChild(b)
+ });
+}
+function answerQuiz(i,btn){
+ if(answered)return;answered=true;sound(i===currentQ.correct?"good":"bad");
+ const buttons=[...document.querySelectorAll("#options .option")];
+ buttons[currentQ.correct].classList.add("correct");
+ if(i===currentQ.correct){
+   state.streak++;let mult=state.streak>=5?3:state.streak>=3?2:1;
+   addReward(20,10,mult);
+   document.getElementById("feedback").innerHTML=`<b class="text-emerald-500">✅ Chính xác! Combo ×${mult}</b><br><br>💡 ${currentQ.ex}`;
+ }else{
+   state.streak=0;save();btn.classList.add("wrong");
+   document.getElementById("feedback").innerHTML=`<b class="text-red-500">❌ Chưa đúng.</b><br><br>Đáp án đúng: <b>${currentQ.a[currentQ.correct]}</b><br>💡 ${currentQ.ex}`;
+ }
+ document.getElementById("quizStreak").textContent=state.streak;
+ document.getElementById("feedback").classList.remove("hidden");
+ document.getElementById("nextBtn").classList.remove("hidden");
+}
+function useFifty(){
+ if(answered)return;
+ if(!state.items.power_fifty){toast("🔒 Bạn chưa có vật phẩm 50/50.");return}
+ if(hiddenOptions.length)return;
+ let wrong=currentQ.a.map((_,i)=>i).filter(i=>i!==currentQ.correct);
+ wrong.sort(()=>Math.random()-.5);hiddenOptions=wrong.slice(0,2);
+ hiddenOptions.forEach(i=>document.querySelectorAll("#options .option")[i].classList.add("hidden"));
+ state.items.power_fifty=false;save();toast("💡 Đã dùng 50/50")
+}
+function skipQuestion(){
+ if(answered)return;
+ if(!state.items.power_skip){toast("🔒 Bạn chưa có vật phẩm Skip.");return}
+ state.items.power_skip=false;state.streak=0;save();newQuestion();toast("⏭️ Đã bỏ qua")
+}
+
+/* =========================
+   DRAGON
+========================= */
+let dragon={running:false,time:30,score:0,speed:1,timer:null};
+const dragonQs=[
+ ["2x + 5x = ?",["7x","10x","x+7","7"],0],
+ ["(x+3)² = ?",["x²+6x+9","x²+9","x²+3x+9","x²+6"],0],
+ ["x²−16 = ?",["(x−4)(x+4)","(x−8)(x+2)","(x−4)²","x(x−16)"],0],
+ ["1/2 + 1/2 = ?",["1","1/2","2","0"],0],
+ ["Nếu ABCD là hình bình hành, AB // ?",["CD","AD","AC","BD"],0],
+ ["Tần số của 5 trong 5,6,5,7,5 là ?",["3","2","1","5"],0]
+];
+function updateSpeed(v){
+ dragon.speed=Number(v);document.getElementById("speedLabel").textContent=dragon.speed.toFixed(2).replace(".00","")+"×";
+ localStorage.setItem("dragonSpeed",v)
+}
+function startDragon(){
+ clearInterval(dragon.timer);dragon.running=true;dragon.time=30;dragon.score=0;
+ document.getElementById("dragonStart").classList.add("hidden");
+ document.getElementById("dragonQ").classList.remove("hidden");
+ document.getElementById("dragonScore").textContent=0;
+ nextDragon();
+ dragon.timer=setInterval(()=>{
+   dragon.time--;document.getElementById("dragonTime").textContent=dragon.time;
+   if(dragon.time<=0)endDragon()
+ },1000)
+}
+function nextDragon(){
+ if(!dragon.running)return;
+ let q=dragonQs[Math.floor(Math.random()*dragonQs.length)];
+ let qbox=document.getElementById("dragonQ");qbox.textContent=q[0];
+ let box=document.getElementById("dragonAnswers");box.innerHTML="";
+ let choices=q[1].map((x,i)=>({x,i})).sort(()=>Math.random()-.5);
+ choices.forEach(c=>{
+  let b=document.createElement("button");b.className="btn primary";b.textContent=c.x;
+  b.onclick=()=>{
+   if(!dragon.running)return;
+   if(c.i===q[2]){
+    sound("good");dragon.score+=Math.round(10*dragon.speed);state.streak++;
+    addReward(8,Math.round(5*dragon.speed),state.streak>=3?2:1);
+    document.getElementById("dragonScore").textContent=dragon.score;
+    nextDragon();
+   }else{sound("bad");state.streak=0;save();toast("❌ Sai rồi!");}
+  };box.appendChild(b)
+ })
+}
+function endDragon(){
+ dragon.running=false;clearInterval(dragon.timer);
+ if(dragon.score>state.highDragon){state.highDragon=dragon.score;toast("🏆 Kỷ lục Rồng mới!")}
+ save();document.getElementById("dragonStart").classList.remove("hidden");
+ document.getElementById("dragonStart").innerHTML=`<div class="text-6xl">🐉</div><h3 class="text-2xl font-black mb-2">Hết giờ!</h3><p class="mb-3">Điểm: <b>${dragon.score}</b> • Kỷ lục: <b>${state.highDragon}</b></p><button class="btn primary" onclick="startDragon()">🔁 Chơi lại</button>`;
+ document.getElementById("dragonQ").classList.add("hidden");
+ document.getElementById("dragonAnswers").innerHTML="";
+}
+
+/* =========================
+   MATCH - CARDS FACE UP
+========================= */
+let matchSelected=[],matched=0;
+function initMatch(){
+ matchSelected=[];matched=0;document.getElementById("matchCount").textContent=0;
+ const cards=[];
+ matchPairs.forEach((p,i)=>{
+   cards.push({text:p[0],pair:i,type:"left"});
+   cards.push({text:p[1],pair:i,type:"right"});
+ });
+ cards.sort(()=>Math.random()-.5);
+ const grid=document.getElementById("matchGrid");grid.innerHTML="";
+ cards.forEach((c)=>{
+   const d=document.createElement("div");d.className="match-card";d.innerHTML=c.text;
+   d.dataset.pair=c.pair;d.dataset.type=c.type;
+   d.onclick=()=>selectMatch(d);
+   grid.appendChild(d)
+ })
+}
+function selectMatch(card){
+ if(card.classList.contains("matched")||matchSelected.includes(card)||matchSelected.length>=2)return;
+ card.classList.add("selected");matchSelected.push(card);sound();
+ if(matchSelected.length===2){
+   const [a,b]=matchSelected;
+   if(a.dataset.pair===b.dataset.pair && a.dataset.type!==b.dataset.type){
+    a.classList.add("matched");b.classList.add("matched");matched++;
+    state.streak++;addReward(15,8,state.streak>=3?2:1);sound("good");
+    document.getElementById("matchCount").textContent=matched;
+    matchSelected=[];
+    if(matched===7){toast("🎉 Hoàn thành tất cả HĐT!");}
+   }else{
+    sound("bad");state.streak=0;save();
+    setTimeout(()=>{a.classList.remove("selected");b.classList.remove("selected");matchSelected=[]},500)
+   }
+ }
+}
+
+/* =========================
+   BALL GAME & AI ENGINE
+========================= */
+let ball={running:false,time:30,score:0,timer:null,animId:null,current:null,balls:[]};
+const ballQs=[
+ {q:"Phân tích x² − 25 thành nhân tử:",a:["(x − 5)(x + 5)","(x − 25)(x + 1)","(x − 5)²","x(x − 25)"],correct:0,hint:"Dùng hiệu hai bình phương: a² - b² = (a - b)(a + b) với a=x, b=5."},
+ {q:"(a + b)² bằng hằng đẳng thức nào?",a:["a² + 2ab + b²","a² + b²","a² − 2ab + b²","a² + ab + b²"],correct:0,hint:"Bình phương của một tổng: (a+b)² = a² + 2ab + b²."},
+ {q:"Hình vuông có tính chất đặc trưng nào?",a:["4 góc vuông và 4 cạnh bằng nhau","Chỉ 2 cạnh bằng nhau","Chỉ 2 góc vuông","Chỉ 1 cặp cạnh song song"],correct:0,hint:"Hình vuông vừa là hình chữ nhật (4 góc vuông) vừa là hình thoi (4 cạnh bằng nhau)."},
+ {q:"Tính: (2/3) × (3/4) =",a:["1/2","2/7","3/8","6/12"],correct:0,hint:"Nhân tử với tử, mẫu với mẫu: (2×3)/(3×4) = 6/12 = 1/2."},
+ {q:"Phân tích a³ − b³ =",a:["(a − b)(a² + ab + b²)","(a + b)(a² + ab + b²)","(a − b)(a² − ab + b²)","a³ − 3a²b + b³"],correct:0,hint:"Hiệu hai lập phương: a³ - b³ = (a - b)(a² + ab + b²)."},
+ {q:"Cho dãy dữ liệu: 2, 2, 3, 4, 2. Tần số của 2 là:",a:["3","2","1","4"],correct:0,hint:"Tần số là số lần xuất hiện của giá trị đó. Số 2 xuất hiện 3 lần."},
+ {q:"Đa thức x² + 4x + 4 viết dưới dạng bình phương là:",a:["(x + 2)²","(x − 2)²","(x + 4)²","x² + 2"],correct:0,hint:"Hằng đẳng thức (a+b)² với a=x, b=2."},
+ {q:"Tứ giác có 4 cạnh bằng nhau là hình gì?",a:["Hình thoi","Hình chữ nhật","Hình thang","Hình bình hành"],correct:0,hint:"Theo định nghĩa, tứ giác có 4 cạnh bằng nhau là hình thoi."}
+];
+
+function askAIHint(){
+ if(!ball.current){
+  toast("💡 Hãy bắt đầu trò chơi để nhận gợi ý từ AI!");
+  return;
+ }
+ const hintBox = document.getElementById("aiHintBox");
+ hintBox.innerHTML = `🤖 <b>Trợ lý AI Gợi Ý:</b> ${ball.current.hint}`;
+ hintBox.classList.remove("hidden");
+ sound();
+}
+
+function startBall(){
+ clearInterval(ball.timer);
+ cancelAnimationFrame(ball.animId);
+ 
+ ball.running=true; ball.time=30; ball.score=0;
+ document.getElementById("ballStart").classList.add("hidden");
+ document.getElementById("ballBoard").classList.remove("hidden");
+ document.getElementById("aiHintBox").classList.add("hidden");
+ document.getElementById("ballScore").textContent=0;
+ 
+ nextBall();
+ 
+ ball.timer=setInterval(()=>{
+  ball.time--;
+  document.getElementById("ballTime").textContent=ball.time;
+  if(ball.time<=0) endBall();
+ },1000);
+}
+
+function nextBall(){
+ if(!ball.running) return;
+ document.getElementById("aiHintBox").classList.add("hidden");
+ 
+ let q = ballQs[Math.floor(Math.random()*ballQs.length)];
+ ball.current = q;
+ document.getElementById("ballQuestion").innerHTML = q.q;
+ 
+ const board = document.getElementById("ballBoard");
+ board.innerHTML = "";
+ ball.balls = [];
+ 
+ const colors = [
+  'radial-gradient(circle at 30% 25%, #ffffff, #38bdf8 30%, #1d4ed8 85%)',
+  'radial-gradient(circle at 30% 25%, #ffffff, #f43f5e 30%, #be123c 85%)',
+  'radial-gradient(circle at 30% 25%, #ffffff, #10b981 30%, #047857 85%)',
+  'radial-gradient(circle at 30% 25%, #ffffff, #f59e0b 30%, #b45309 85%)'
+ ];
+
+ // Generate animated balls with positions & velocities
+ q.a.forEach((ans, i) => {
+  const el = document.createElement("div");
+  el.className = "ball";
+  el.style.background = colors[i % colors.length];
+  
+  const label = document.createElement("div");
+  label.className = "ball-label";
+  label.textContent = String.fromCharCode(65 + i);
+  
+  const subtext = document.createElement("div");
+  subtext.className = "ball-subtext";
+  subtext.textContent = ans;
+  
+  el.appendChild(label);
+  el.appendChild(subtext);
+  
+  // Random position & smooth velocity
+  let posX = 10 + (i % 2) * 45 + Math.random() * 15;
+  let posY = 15 + Math.floor(i / 2) * 35 + Math.random() * 10;
+  let vx = (Math.random() - 0.5) * 0.4;
+  let vy = (Math.random() - 0.5) * 0.4;
+  if(Math.abs(vx) < 0.1) vx = 0.2;
+  if(Math.abs(vy) < 0.1) vy = 0.2;
+
+  el.style.left = posX + "%";
+  el.style.top = posY + "%";
+  
+  el.onclick = () => shootBall(el, i);
+  board.appendChild(el);
+  
+  ball.balls.push({ el, index: i, x: posX, y: posY, vx, vy });
+ });
+
+ animateBalls();
+}
+
+function animateBalls(){
+ if(!ball.running) return;
+ const boardWidth = 85; // percentage bounds
+ const boardHeight = 75;
+
+ ball.balls.forEach(b => {
+  b.x += b.vx;
+  b.y += b.vy;
+
+  if(b.x <= 2 || b.x >= boardWidth){ b.vx *= -1; b.x = Math.max(2, Math.min(boardWidth, b.x)); }
+  if(b.y <= 5 || b.y >= boardHeight){ b.vy *= -1; b.y = Math.max(5, Math.min(boardHeight, b.y)); }
+
+  b.el.style.left = b.x + "%";
+  b.el.style.top = b.y + "%";
+ });
+
+ ball.animId = requestAnimationFrame(animateBalls);
+}
+
+function shootBall(el, i){
+ if(!ball.running) return;
+ if(i === ball.current.correct){
+  el.classList.add("pop");
+  sound("good");
+  ball.score += 20;
+  state.streak++;
+  addReward(15, 10, state.streak >= 3 ? 2 : 1);
+  document.getElementById("ballScore").textContent = ball.score;
+  setTimeout(nextBall, 300);
+ } else {
+  sound("bad");
+  state.streak = 0;
+  save();
+  el.style.opacity = "0.2";
+  toast("💥 Bắn nhầm bóng sai rồi!");
+ }
+}
+
+function endBall(){
+ ball.running = false;
+ clearInterval(ball.timer);
+ cancelAnimationFrame(ball.animId);
+ 
+ if(ball.score > state.highBall){
+  state.highBall = ball.score;
+  toast("🏆 Kỷ lục Bắn Bóng mới!");
+ }
+ save();
+ document.getElementById("ballBoard").classList.add("hidden");
+ document.getElementById("ballStart").classList.remove("hidden");
+ document.getElementById("ballStart").textContent = "🔁 Chơi lại";
+ document.getElementById("ballQuestion").innerHTML = `⏰ Hết giờ! Điểm: <b>${ball.score}</b> • Kỷ lục: <b>${state.highBall}</b>`;
+}
+
+/* =========================
+   AI ASSISTANT CHAT ENGINE
+========================= */
+function sendAIMessage(){
+ const input = document.getElementById("aiInput");
+ const msg = input.value.trim();
+ if(!msg) return;
+
+ const chatBox = document.getElementById("aiChatBox");
+ 
+ // User Bubble
+ const userDiv = document.createElement("div");
+ userDiv.className = "bg-[var(--primary)] text-white p-3 rounded-2xl max-w-[85%] self-end font-medium";
+ userDiv.textContent = msg;
+ chatBox.appendChild(userDiv);
+ input.value = "";
+ chatBox.scrollTop = chatBox.scrollHeight;
+
+ // Thinking indicator
+ const aiDiv = document.createElement("div");
+ aiDiv.className = "bg-[var(--panel)] p-3 rounded-2xl border border-[var(--border)] max-w-[85%] self-start";
+ aiDiv.innerHTML = "⏳ <i>AI đang tư duy giải toán...</i>";
+ chatBox.appendChild(aiDiv);
+ chatBox.scrollTop = chatBox.scrollHeight;
+
+ setTimeout(() => {
+  aiDiv.innerHTML = generateAIResponse(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+ }, 600);
+}
+
+function generateAIResponse(query){
+ const q = query.toLowerCase();
+ if(q.includes("hằng đẳng thức") || q.includes("hdt")){
+  return `💡 <b>7 Hằng Đẳng Thức Đáng Nhớ Toán 8:</b><br>
+  1. $(a+b)^2 = a^2 + 2ab + b^2$<br>
+  2. $(a-b)^2 = a^2 - 2ab + b^2$<br>
+  3. $a^2 - b^2 = (a-b)(a+b)$<br>
+  4. $(a+b)^3 = a^3 + 3a^2b + 3ab^2 + b^3$<br>
+  5. $(a-b)^3 = a^3 - 3a^2b + 3ab^2 - b^3$<br>
+  6. $a^3 + b^3 = (a+b)(a^2 - ab + b^2)$<br>
+  7. $a^3 - b^3 = (a-b)(a^2 + ab + b^2)$`;
+ }
+ if(q.includes("phân tích") || q.includes("nhân tử")){
+  return `📐 <b>Phương pháp phân tích đa thức thành nhân tử:</b><br>
+  1. <b>Đặt nhân tử chung:</b> Tìm yếu tố chung của các hạng tử.<br>
+  2. <b>Dùng hằng đẳng thức:</b> Áp dụng 7 HĐT chuẩn.<br>
+  3. <b>Nhóm hạng tử:</b> Kết hợp các hạng tử thích hợp.<br>
+  4. <b>Tách/Thêm bớt:</b> Thường áp dụng cho tam thức bậc hai $ax^2 + bx + c$.`;
+ }
+ if(q.includes("hình") || q.includes("tứ giác") || q.includes("hình chữ nhật") || q.includes("hình thoi")){
+  return `📐 <b>Mẹo nhớ tính chất các Tứ Giác (Toán 8):</b><br>
+  • <b>Hình bình hành:</b> Các cạnh đối song song & bằng nhau, 2 đường chéo cắt nhau tại trung điểm.<br>
+  • <b>Hình chữ nhật:</b> HBH có 1 góc vuông, 2 đường chéo bằng nhau.<br>
+  • <b>Hình thoi:</b> HBH có 4 cạnh bằng nhau, 2 đường chéo vuông góc.<br>
+  • <b>Hình vuông:</b> Vừa là Hình chữ nhật vừa là Hình thoi!`;
+ }
+ return `🤖 <b>Phân tích AI cho câu hỏi: "${query}"</b><br>
+ Để giải dạng bài này trong Toán 8:<br>
+ • Bước 1: Xác định rõ dạng toán (Đa thức, Phân thức hay Tứ giác).<br>
+ • Bước 2: Áp dụng hằng đẳng thức hoặc quy tắc đổi dấu/quy đồng.<br>
+ • Bước 3: Rút gọn và kiểm tra điều kiện xác định (với phân thức).<br>
+ 🌟 <i>Chúc bạn học tốt! Hãy thử qua chế độ **Lý thuyết** hoặc **Bắn Bóng Toán** nhé!</i>`;
+}
+
+/* =========================
+   SHOP
+========================= */
+const shop=[
+ {id:"avatar_dragon",icon:"🐲",name:"Avatar Rồng",cost:80,type:"avatar",value:"🐲"},
+ {id:"avatar_robot",icon:"🤖",name:"Avatar Robot",cost:120,type:"avatar",value:"🤖"},
+ {id:"theme_cyber",icon:"⚡",name:"Theme Cyberpunk Neon",cost:180,type:"theme",value:"cyber"},
+ {id:"theme_cosmic",icon:"🚀",name:"Theme Vũ Trụ",cost:180,type:"theme",value:"cosmic"},
+ {id:"power_fifty",icon:"💡",name:"Power-up 50/50",cost:35,type:"power"},
+ {id:"power_skip",icon:"⏭️",name:"Power-up Bỏ qua",cost:30,type:"power"},
+ {id:"power_double",icon:"🔥",name:"Double Points",cost:60,type:"power"}
+];
+function renderShop(){
+ const box=document.getElementById("shopList");box.innerHTML="";
+ shop.forEach(x=>{
+  let unlocked=state.items[x.id];
+  let b=document.createElement("div");b.className="shop-item";
+  b.innerHTML=`<div class="flex items-center gap-3"><span class="text-3xl">${x.icon}</span><div><b>${x.name}</b><div class="text-sm text-[var(--muted)]">🪙 ${x.cost} Coins</div></div></div>`;
+  const btn=document.createElement("button");btn.className="btn "+(unlocked?"secondary":"primary");
+  btn.textContent=unlocked?"ĐÃ MỞ":"MUA";
+  btn.disabled=unlocked;btn.onclick=()=>buyItem(x);
+  b.appendChild(btn);box.appendChild(b)
+ })
+}
+function buyItem(x){
+ if(state.coins<x.cost){toast("🪙 Không đủ Coin!");return}
+ state.coins-=x.cost;state.items[x.id]=true;
+ if(x.type==="avatar"){state.avatar=x.value;toast("🎭 Đã trang bị "+x.name)}
+ else if(x.type==="theme"){state.theme=x.value;document.body.dataset.theme=x.value;toast("🎨 Đã mở "+x.name)}
+ else toast("⚡ Đã nhận "+x.name);
+ save();renderShop()
+}
+
+/* =========================
+   INIT
+========================= */
+document.body.dataset.theme=state.theme;
+document.getElementById("speedRange").value=localStorage.getItem("dragonSpeed")||"1";
+updateSpeed(document.getElementById("speedRange").value);
+updateUI();
+renderTheory();
+newQuestion();
+initMatch();
+</script>
+</body>
+</html>
